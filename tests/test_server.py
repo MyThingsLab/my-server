@@ -45,16 +45,21 @@ def test_end_to_end_health_and_ledger(tmp_path: Path) -> None:
         thread.join(timeout=5)
 
 
-def test_end_to_end_post_is_405(tmp_path: Path) -> None:
+def test_end_to_end_enqueue_disabled_without_token(tmp_path: Path) -> None:
+    # make_server builds the App with token=None here, so the write surface is off.
     httpd, thread = _serve_one(tmp_path)
     host, port = httpd.server_address[0], httpd.server_address[1]
     try:
-        req = urllib.request.Request(f"http://{host}:{port}/ledger", data=b"{}", method="POST")
+        req = urllib.request.Request(
+            f"http://{host}:{port}/tools/my-researcher/issues",
+            data=b'{"repo":"o/r","title":"t"}',
+            method="POST",
+        )
         try:
             urllib.request.urlopen(req, timeout=5)  # noqa: S310
-            raise AssertionError("POST should have been rejected")
+            raise AssertionError("enqueue should be disabled without a token")
         except urllib.error.HTTPError as err:
-            assert err.code == 405
+            assert err.code == 403
     finally:
         httpd.shutdown()
         httpd.server_close()
