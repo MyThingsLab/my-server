@@ -18,8 +18,13 @@ covered here defers to `HARNESS.md`, then `mythings-core/docs/CONVENTIONS.md`.
   adds its own model call; when the API layer surfaces another tool's capability
   it delegates to *that* tool's Engine call, keeping the "one Engine call per
   judgment step" contract intact.
-- **Invariants / rules:** read-only over the ledger and repo state — the server
-  never opens PRs, mutates the ledger, or performs writes on behalf of a caller.
-  It binds to `127.0.0.1` by default; exposing it beyond localhost is an explicit
-  opt-in. No unauthenticated mutation surface, ever.
+- **Invariants / rules:** read-only over the ledger and repo state, with exactly
+  **one** deliberate write: `POST /tools/<name>/issues` enqueues a labeled backlog
+  issue that the target tool's own CI loop picks up. That write never opens a PR
+  and never spends model tokens — it only files an issue. It is **fail-closed**:
+  disabled unless `MYSERVER_TOKEN` is set, and every request must carry
+  `Authorization: Bearer <token>` (no unauthenticated mutation, ever). The server
+  may append its **own** provenance to the ledger (`serve`, `enqueue`) but never
+  mutates other tools' entries. Binds `127.0.0.1` by default; beyond-localhost is
+  an explicit opt-in.
 - **Backlog label:** `my-server`

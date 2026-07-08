@@ -81,8 +81,14 @@ def test_unknown_path_404(tmp_path: Path) -> None:
     assert "no such resource" in payload["error"]
 
 
-@pytest.mark.parametrize("method", ["POST", "PUT", "DELETE", "PATCH"])
-def test_writes_are_rejected(tmp_path: Path, method: str) -> None:
+@pytest.mark.parametrize("method", ["PUT", "DELETE", "PATCH"])
+def test_unknown_verbs_are_405(tmp_path: Path, method: str) -> None:
     app = build_app(tmp_path / "ledger.jsonl")
     resp = app.handle(Request(method=method, path="/ledger", query={}))
     assert resp.status == 405
+
+
+def test_post_to_readonly_path_is_404(tmp_path: Path) -> None:
+    # POST is a real namespace now (enqueue), so a non-enqueue POST path is 404.
+    app = build_app(tmp_path / "ledger.jsonl")
+    assert app.handle(Request(method="POST", path="/ledger", query={})).status == 404
