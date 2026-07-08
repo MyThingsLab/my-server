@@ -5,7 +5,7 @@
 ![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue)
 ![MIT](https://img.shields.io/badge/license-MIT-green)
 
-A [MyThingsLab](../mythings-core) `My[X]` tool that **surfaces the fleet over
+A [MyThingsLab](../my-things-core) `My[X]` tool that **surfaces the fleet over
 HTTP**. It is the one tool that also runs as a long-lived process
 (`myserver serve`) while staying a normal CLI, so CI, the shared ledger, and the
 Engine seam all still apply.
@@ -47,7 +47,7 @@ myserver serve                       # prints "enqueue enabled"
 
 curl -X POST http://127.0.0.1:8787/tools/my-researcher/issues \
   -H "Authorization: Bearer $MYSERVER_TOKEN" \
-  -d '{"repo":"MyThingsLab/mythings-core","title":"Study GNNs","body":"depth first"}'
+  -d '{"repo":"MyThingsLab/my-things-core","title":"Study GNNs","body":"depth first"}'
 # → 201 {"tool":"my-researcher","label":"my-researcher","repo":…,"issue":7,"url":…}
 ```
 
@@ -74,7 +74,7 @@ The skeleton keeps growing on the same socket-free `App` router:
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
-pip install -e ../mythings-core -e ".[dev]"
+pip install -e ../my-things-core -e ".[dev]"
 pytest
 ```
 
