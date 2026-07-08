@@ -8,10 +8,12 @@ from mythings.ledger import Ledger
 from myserver.app import App, Request
 from myserver.registry import REGISTRY
 
+_ISSUE_URL = "https://github.com/MyThingsLab/my-things-core/issues/42"
+
 
 class FakeCreator:
     # Mocks the one write boundary (gh issue create). Records its calls.
-    def __init__(self, url: str = "https://github.com/MyThingsLab/my-things-core/issues/42") -> None:
+    def __init__(self, url: str = _ISSUE_URL) -> None:
         self.url = url
         self.calls: list[dict[str, str]] = []
 
