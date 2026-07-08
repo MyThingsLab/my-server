@@ -8,10 +8,12 @@ from mythings.ledger import Ledger
 from myserver.app import App, Request
 from myserver.registry import REGISTRY
 
+_ISSUE_URL = "https://github.com/MyThingsLab/my-things-core/issues/42"
+
 
 class FakeCreator:
     # Mocks the one write boundary (gh issue create). Records its calls.
-    def __init__(self, url: str = "https://github.com/MyThingsLab/mythings-core/issues/42") -> None:
+    def __init__(self, url: str = _ISSUE_URL) -> None:
         self.url = url
         self.calls: list[dict[str, str]] = []
 
@@ -115,7 +117,7 @@ def test_enqueue_unknown_tool_404(tmp_path: Path) -> None:
 
 
 def test_enqueue_success_creates_labeled_issue_and_records(tmp_path: Path) -> None:
-    creator = FakeCreator(url="https://github.com/MyThingsLab/mythings-core/issues/7")
+    creator = FakeCreator(url="https://github.com/MyThingsLab/my-things-core/issues/7")
     ledger_path = tmp_path / "ledger.jsonl"
     app = App(Ledger(ledger_path), token="secret", create_issue=creator)
     resp = app.handle(
@@ -123,7 +125,7 @@ def test_enqueue_success_creates_labeled_issue_and_records(tmp_path: Path) -> No
             "POST",
             "/tools/my-researcher/issues",
             headers={"authorization": "Bearer secret"},
-            body='{"repo":"MyThingsLab/mythings-core","title":"Study GNNs","body":"depth"}',
+            body='{"repo":"MyThingsLab/my-things-core","title":"Study GNNs","body":"depth"}',
         )
     )
     assert resp.status == 201
@@ -131,13 +133,13 @@ def test_enqueue_success_creates_labeled_issue_and_records(tmp_path: Path) -> No
     assert payload == {
         "tool": "my-researcher",
         "label": "my-researcher",
-        "repo": "MyThingsLab/mythings-core",
+        "repo": "MyThingsLab/my-things-core",
         "issue": 7,
-        "url": "https://github.com/MyThingsLab/mythings-core/issues/7",
+        "url": "https://github.com/MyThingsLab/my-things-core/issues/7",
     }
     assert creator.calls == [
         {
-            "repo": "MyThingsLab/mythings-core",
+            "repo": "MyThingsLab/my-things-core",
             "title": "Study GNNs",
             "body": "depth",
             "label": "my-researcher",
