@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+from myserver.mcp_server import serve_mcp
 from myserver.server import serve
 
 
@@ -20,9 +21,16 @@ def main(argv: list[str] | None = None) -> int:
         "--ledger", type=Path, default=Path(".mythings/ledger.jsonl"), help="ledger to serve"
     )
 
+    mcp = sub.add_parser("mcp", help="run the MCP server over stdio (long-lived)")
+    mcp.add_argument(
+        "--ledger", type=Path, default=Path(".mythings/ledger.jsonl"), help="ledger to serve"
+    )
+
     args = parser.parse_args(argv)
     if args.cmd == "serve":
         serve(host=args.host, port=args.port, ledger_path=args.ledger)
+    elif args.cmd == "mcp":
+        serve_mcp(ledger_path=args.ledger)
     return 0
 
 

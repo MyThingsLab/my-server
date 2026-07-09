@@ -27,6 +27,18 @@ def test_serve_defaults_to_localhost(monkeypatch: pytest.MonkeyPatch) -> None:
     assert captured["port"] == 8787
 
 
+def test_mcp_wires_ledger_arg_through(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_serve_mcp(*, ledger_path: Path) -> None:
+        captured.update(ledger_path=ledger_path)
+
+    monkeypatch.setattr(cli, "serve_mcp", fake_serve_mcp)
+    rc = cli.main(["mcp", "--ledger", "/tmp/l.jsonl"])
+    assert rc == 0
+    assert captured == {"ledger_path": Path("/tmp/l.jsonl")}
+
+
 def test_no_subcommand_errors(monkeypatch: pytest.MonkeyPatch) -> None:
     with pytest.raises(SystemExit):
         cli.main([])

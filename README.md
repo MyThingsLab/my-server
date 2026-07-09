@@ -13,7 +13,10 @@ Engine seam all still apply.
 This first cut is a **read-only ledger server**: a small, dependency-free HTTP
 server (Python's `http.server`, no framework) that exposes the shared ledger so
 the fleet's history can be watched from a browser or `curl`. It never mutates
-anything — the only writes it makes are its own `serve` provenance records.
+anything — the only writes it makes are its own `serve` provenance records. A
+second transport, `myserver mcp`, exposes the same read-only + one-write
+surface to MCP clients over stdio; it's the one place `my-server` pulls in a
+third-party dependency (the `mcp` SDK) — everything else stays stdlib.
 
 ## Endpoints
 
@@ -63,12 +66,35 @@ myserver serve --port 9000 --ledger .mythings/ledger.jsonl
 It binds to `127.0.0.1` by default; exposing it beyond localhost (`--host`) is an
 explicit opt-in.
 
+## MCP
+
+```bash
+myserver mcp --ledger .mythings/ledger.jsonl   # speaks JSON-RPC over stdio
+```
+
+Same four capabilities as the HTTP API, as MCP tools: `list_tools`,
+`tool_status`, `read_ledger`, `enqueue_issue`. It's a second transport over the
+same `App` — no separate auth model: `enqueue_issue` is gated by `MYSERVER_TOKEN`
+in the server process's own environment exactly like the HTTP `POST`, and is
+disabled the same way if it's unset. Point any MCP client at it by launching
+`myserver mcp` as a subprocess, e.g. in Claude Desktop's config:
+
+```json
+{
+  "mcpServers": {
+    "mythingslab": {
+      "command": "myserver",
+      "args": ["mcp", "--ledger", "/path/to/.mythings/ledger.jsonl"],
+      "env": { "MYSERVER_TOKEN": "..." }
+    }
+  }
+}
+```
+
 ## Roadmap
 
-The skeleton keeps growing on the same socket-free `App` router:
-
-- an **MCP server** exposing the contracts to agents,
-- a status **dashboard** rendering ledger/PR/fleet state.
+The skeleton keeps growing on the same socket-free `App` router — next up: a
+status **dashboard** rendering ledger/PR/fleet state.
 
 ## Install (development)
 
