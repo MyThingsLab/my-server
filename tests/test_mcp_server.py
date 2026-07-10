@@ -1,15 +1,17 @@
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 from pathlib import Path
+from unittest import mock
 
 import mcp.types as types
 import pytest
 from mythings.ledger import Ledger
 
 from myserver.app import build_app
-from myserver.mcp_server import build_mcp_server, to_request
+from myserver.mcp_server import _run_stdio, build_mcp_server, serve_mcp, to_request
 
 _ISSUE_URL = "https://github.com/MyThingsLab/my-things-core/issues/42"
 
@@ -89,7 +91,10 @@ def test_list_tools_registers_the_four_tools(tmp_path: Path) -> None:
     handler = server.request_handlers[types.ListToolsRequest]
     result = asyncio.run(handler(types.ListToolsRequest(method="tools/list")))
     assert {t.name for t in result.root.tools} == {
-        "list_tools", "tool_status", "read_ledger", "enqueue_issue",
+        "list_tools",
+        "tool_status",
+        "read_ledger",
+        "enqueue_issue",
     }
 
 
@@ -124,3 +129,34 @@ def test_call_enqueue_issue_with_token_creates_issue(tmp_path: Path) -> None:
 
     assert result.structuredContent["issue"] == 42
     assert creator.calls == [{"repo": "o/r", "title": "t", "body": "", "label": "my-researcher"}]
+
+
+# ---- stdio transport wiring: mocked at the stdio/asyncio boundary -----------
+
+
+def test_run_stdio_runs_server_over_the_stdio_streams() -> None:
+    server = mock.Mock()
+    server.run = mock.AsyncMock()
+    server.create_initialization_options.return_value = "init-opts"
+
+    @contextlib.asynccontextmanager
+    async def fake_stdio_server():
+        yield ("read", "write")
+
+    with mock.patch("myserver.mcp_server.stdio_server", fake_stdio_server):
+        asyncio.run(_run_stdio(server))
+
+    server.run.assert_awaited_once_with("read", "write", "init-opts")
+
+
+def test_serve_mcp_builds_app_and_drives_run_stdio(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.setenv("MYSERVER_TOKEN", "secret")
+    ran: list = []
+
+    async def fake_run_stdio(server) -> None:
+        ran.append(server)
+
+    with mock.patch("myserver.mcp_server._run_stdio", fake_run_stdio):
+        serve_mcp(ledger_path=tmp_path / "ledger.jsonl")
+
+    assert len(ran) == 1
