@@ -23,6 +23,7 @@ REGISTRY: tuple[ToolSpec, ...] = (
     ToolSpec("my-changelogger", "my-changelogger", "Add a changelog section for recent entries."),
     ToolSpec("my-tester", "my-tester", "Add a test for the first uncovered unit."),
     ToolSpec("my-guard", "my-guard", "Evaluate a proposed action against the rule engine."),
+    ToolSpec("my-site", "my-site", "Draft Jekyll content for a personal site from an issue."),
 )
 
 _BY_NAME = {spec.name: spec for spec in REGISTRY}
