@@ -1,1 +1,2 @@
 {"data":{"session":"2026-09-14"},"detail":"Pin mcp dependency to >=1.28,<2 to prevent breaking changes from mcp 2.x","kind":"decision","outcome":"success","tool":"claude-code","ts":"2026-09-13T22:05:41Z"}
+{"data":{"session":"2026-09-14"},"detail":"revendor canonical HARNESS.md","kind":"docs","outcome":"success","tool":"claude-code","ts":"2026-09-14T15:42:23Z"}
